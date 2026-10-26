@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cajitas Musicales</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Mali:wght@500;600&family=Nunito:wght@600;700;800&display=swap">
+<style>
+/* Layout: una columna de "cajitas" (tarjetas) para escuchar cada melodía; mismo mundo pastel del juego, a propósito en un solo tema claro. */
+:root{
+  --cream:#FFF8EF;
+  --ink:#463C8A;
+  --purple:#7F4FE0;
+  --pink:#FF6B98;
+  --gold:#E9B44C;
+  --brass:#C9973E;
+  --card:#FFFFFF;
+  --f-display:"Fredoka","Nunito",ui-rounded,system-ui,sans-serif;
+  --f-body:"Nunito",ui-rounded,system-ui,sans-serif;
+  --f-hand:"Mali","Comic Sans MS",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100%;color:var(--ink);font-family:var(--f-body);
+  background:radial-gradient(90% 50% at 0% 0%,#FFE3EE 0%,transparent 60%),radial-gradient(90% 50% at 100% 100%,#E2EAFF 0%,transparent 60%),var(--cream);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 40px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{text-align:center;padding-block:6px 4px}
+h1{margin:0;font-family:var(--f-display);font-weight:700;font-size:clamp(34px,9vw,46px);line-height:1;
+  background:linear-gradient(180deg,#7F4FE0,#B266D9);-webkit-background-clip:text;background-clip:text;color:transparent;text-wrap:balance}
+.lead{margin:10px auto 0;max-width:36ch;font-weight:700;font-size:16px;line-height:1.4}
+.note{margin:6px auto 0;max-width:40ch;font-size:13.5px;font-weight:600;opacity:.75;line-height:1.4}
+
+.box{position:relative;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;padding:18px;border-radius:26px;background:var(--card);
+  box-shadow:0 0 0 2px #EFE5F8,0 14px 30px -18px rgba(94,63,163,.45);transition:box-shadow .3s,transform .3s}
+.box.playing{box-shadow:0 0 0 3px var(--c),0 18px 36px -16px var(--c);transform:translateY(-2px)}
+.play{position:relative;width:76px;height:76px;border-radius:22px;border:0;cursor:pointer;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 70%,#fff),var(--c));box-shadow:inset 0 3px 0 #ffffff70,inset 0 -5px 0 color-mix(in srgb,var(--c) 75%,#000),0 8px 16px -8px var(--c);
+  transition:transform .15s}
+.play:active{transform:translateY(3px) scale(.96)}
+.play:focus-visible{outline:3px solid var(--purple);outline-offset:4px}
+.play svg{width:32px;height:32px}
+.play .i-stop{display:none}
+.box.playing .play .i-play{display:none}
+.box.playing .play .i-stop{display:block}
+.info{min-width:0}
+.info h2{margin:0;font-family:var(--f-display);font-weight:600;font-size:23px;line-height:1.1;color:var(--ink)}
+.info p{margin:5px 0 8px;font-family:var(--f-hand);font-size:15px;line-height:1.4}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;background:color-mix(in srgb,var(--c) 14%,#fff);color:color-mix(in srgb,var(--c) 80%,#000)}
+/* el rodillo de la cajita musical, con sus púas */
+.drum{grid-column:1/-1;position:relative;height:30px;border-radius:999px;overflow:hidden;
+  background:linear-gradient(180deg,#F7DFA4 0%,#E9B44C 45%,#C9973E 100%);box-shadow:inset 0 2px 0 #fff8,inset 0 -3px 0 #a87a2c55}
+.drum::before{content:"";position:absolute;inset:0;background-image:radial-gradient(circle,#fff 0 1.6px,transparent 2.2px),radial-gradient(circle,#fff 0 1.6px,transparent 2.2px);
+  background-size:22px 12px,22px 12px;background-position:0 3px,11px 15px;opacity:.85}
+.box.playing .drum::before{animation:roll 1.2s linear infinite}
+@keyframes roll{to{background-position:-22px 3px,-11px 15px}}
+.prog{position:absolute;left:0;top:0;bottom:0;width:0;background:#ffffff55;mix-blend-mode:soft-light}
+.notes{position:absolute;right:18px;top:10px;width:40px;height:40px;pointer-events:none}
+.notes i{position:absolute;bottom:0;font-style:normal;font-size:18px;color:var(--c);opacity:0}
+.box.playing .notes i{animation:floatN 2.4s ease-out infinite}
+.notes i:nth-child(2){left:16px;animation-delay:.8s!important}
+.notes i:nth-child(3){left:6px;animation-delay:1.6s!important}
+@keyframes floatN{0%{opacity:0;transform:translateY(0) rotate(-10deg)}20%{opacity:1}100%{opacity:0;transform:translateY(-34px) rotate(14deg)}}
+.small{grid-template-columns:auto 1fr;padding:14px 18px;background:#ffffffaa}
+.small .play{width:56px;height:56px;border-radius:18px}
+.small .play svg{width:24px;height:24px}
+.small .info h2{font-size:18px}
+.sub-h{text-align:center;padding-top:18px}
+.h2{font-size:clamp(28px,7.5vw,38px)}
+.foot{text-align:center;font-weight:700;font-size:14px;line-height:1.5;margin-top:4px}
+@media (prefers-reduced-motion:reduce){.box.playing .drum::before,.box.playing .notes i{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Cajitas Musicales</h1>
+    <p class="lead">Tres melodías originales con sonido de cajita musical para el juego de Yei Yei.</p>
+    <p class="note">Toca una cajita para escucharla. Se repite sola; vuelve a tocarla para detenerla. Mejor con audífonos o el volumen arriba.</p>
+  </header>
+
+  <section class="box" style="--c:#9461EC" data-song="nube">
+    <button class="play" aria-label="Escuchar Nube de algodón"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Nube de algodón</h2>
+      <p>Un vals lento, tierno y un poquito melancólico. Es la más parecida al estilo que me contaste.</p>
+      <div class="chips"><span class="chip">Vals · si menor</span><span class="chip">Sin usar por ahora</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+
+  <section class="box" style="--c:#4D8FE6" data-song="luna" id="luna-box">
+    <button class="play" aria-label="Escuchar Luna de papel"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Luna de papel</h2>
+      <p>Una canción de cuna que se mece despacito, como una cuna. Suena a cielo de noche.</p>
+      <div class="chips"><span class="chip">Arrullo · la menor</span><span class="chip">Sin usar por ahora</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+
+  <section class="box" style="--c:#FF6B98" data-song="carta">
+    <button class="play" aria-label="Escuchar Carta para ti"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Carta para ti</h2>
+      <p>Alegre y luminosa, con saltitos que suben, como la sonrisa que sale al leer algo bonito que alguien escribió pensando en ti.</p>
+      <div class="chips"><span class="chip">Alegre · fa mayor</span><span class="chip">Sin usar por ahora</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+
+  <section class="box" style="--c:#E9A92A" data-song="actual">
+    <button class="play" aria-label="Escuchar la melodía del perrito"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Melodía del perrito</h2>
+      <p>La melodía de siempre, ahora arreglada como cajita musical, con su acompañamiento y su eco.</p>
+      <div class="chips"><span class="chip">Arreglo · do mayor</span><span class="chip">En todo el juego</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+
+  <header class="sub-h"><h1 class="h2">Románticas</h1><p class="lead">Dos canciones de cuna originales: una al estilo de Ludovico Einaudi y otra al estilo de Yiruma.</p></header>
+  <section class="box" style="--c:#E2557F" data-song="hilo">
+    <button class="play" aria-label="Escuchar Hilo rojo"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Hilo rojo</h2>
+      <p>Al estilo de Einaudi. Empieza solo el acompañamiento, como un latido; luego entra una melodía de pocas notas que crece hasta un abrazo y vuelve a la calma. Va de la menor a mayor, como de la nostalgia a la esperanza.</p>
+      <div class="chips"><span class="chip">Original · estilo Einaudi</span><span class="chip">≈ 55 s</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+  <section class="box" style="--c:#7F6BE0" data-song="sueno">
+    <button class="play" aria-label="Escuchar Contigo en un sueño"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Contigo en un sueño</h2>
+      <p>Al estilo de Yiruma. Una melodía que se canta sola sobre un bajo que va bajando nota por nota, con adornitos rápidos. El tema regresa una octava arriba, luego un puente nuevo que suena a extrañar a alguien, vuelve el tema como un recuerdo y al final se alarga como si no quisiera terminar.</p>
+      <div class="chips"><span class="chip">Original · estilo Yiruma</span><span class="chip">≈ 1 min 33 s</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+  <header class="sub-h"><h1 class="h2">Canciones de cuna</h1><p class="lead">Nuevas opciones, amorosas y tiernas, con el mismo sonido de cajita musical. Todavía no están en el juego.</p></header>
+  <section class="box" style="--c:#E9779F" data-song="brahms">
+    <button class="play" aria-label="Escuchar Canción de cuna de Brahms"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Canción de cuna de Brahms</h2>
+      <p>La canción de cuna más famosa del mundo, la de los móviles de bebé. Lenta, dulce y tranquila.</p>
+      <div class="chips"><span class="chip">Clásica · 1868</span><span class="chip">Vals lento</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+  <section class="box" style="--c:#B07BE8" data-song="abrazo">
+    <button class="play" aria-label="Escuchar Abrazo de luna"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Abrazo de luna</h2>
+      <p>Una canción de cuna original, compuesta para Yei Yei. Amorosa, en tonalidad mayor y meciéndose despacito.</p>
+      <div class="chips"><span class="chip">Original</span><span class="chip">Vals lento</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+  <section class="box" style="--c:#E9A92A" data-song="estrellita">
+    <button class="play" aria-label="Escuchar Estrellita, ¿dónde estás?"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Estrellita, ¿dónde estás?</h2>
+      <p>La de toda la vida, sencilla y tierna. Va con las estrellitas del juego, aunque es la más infantil.</p>
+      <div class="chips"><span class="chip">Tradicional</span><span class="chip">Calmada</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+  <section class="box" style="--c:#4FA3D9" data-song="lluvia">
+    <button class="play" aria-label="Escuchar Lluvia de estrellas"><svg class="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg><svg class="i-stop" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor"/></svg></button>
+    <div class="info">
+      <h2>Lluvia de estrellas</h2>
+      <p>Original, inspirada en el estilo de Yiruma: una melodía sencilla y emotiva sobre un acompañamiento que fluye como agua.</p>
+      <div class="chips"><span class="chip">Original · estilo Yiruma</span><span class="chip">Re mayor</span></div>
+    </div>
+    <div class="drum"><div class="prog"></div></div>
+    <div class="notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i></div>
+  </section>
+  <p class="foot">En el juego quedó la Melodía del perrito en todas las pantallas. Las demás quedan aquí guardadas por si algún día las quieres.</p>
+</div>
+
+<script>
+/* ============ Motor de cajita musical (Web Audio) ============ */
+const Box = (() => {
+  let ctx, out, wet, dry, timer = null, cur = null, onStep = null;
+  const mtof = m => 440 * Math.pow(2, (m - 69) / 12);
+  function init(){
+    if (ctx) { if (ctx.state === "suspended") ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; ctx = new AC();
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 3; comp.connect(ctx.destination);
+    out = ctx.createGain(); out.gain.value = .9; out.connect(comp);
+    dry = ctx.createGain(); dry.gain.value = 1; dry.connect(out);
+    // eco de cuarto: respuesta de impulso hecha de ruido que se apaga
+    const len = ctx.sampleRate * 2.6, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+    for (let ch = 0; ch < 2; ch++){ const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 3.2); }
+    const conv = ctx.createConvolver(); conv.buffer = ir;
+    const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 350;
+    wet = ctx.createGain(); wet.gain.value = .32; conv.connect(hp); hp.connect(wet); wet.connect(out);
+    dry.connect(conv);
+  }
+  // Una púa de metal: fundamental + parciales inarmónicos que se apagan rápido + el "clic" del mecanismo
+  function tine(m, t, vol){
+    const f = mtof(m) * (1 + (Math.random() - .5) * .0016);
+    const k = Math.min(1.4, Math.max(.55, 700 / f));
+    [[1, 1, 2.6], [2, .3, 1.1], [3.98, .1, .4], [6.12, .045, .18]].forEach(([r, g, d]) => {
+      const o = ctx.createOscillator(), e = ctx.createGain();
+      o.type = "sine"; o.frequency.value = f * r;
+      e.gain.setValueAtTime(.0001, t); e.gain.exponentialRampToValueAtTime(vol * g, t + .003);
+      e.gain.exponentialRampToValueAtTime(.0001, t + d * k);
+      o.connect(e); e.connect(dry); o.start(t); o.stop(t + d * k + .05);
+    });
+    const n = ctx.createBufferSource(), nb = ctx.createBuffer(1, 220, ctx.sampleRate), nd = nb.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = (Math.random()*2-1) * (1 - i/nd.length);
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = Math.min(9000, f * 6); bp.Q.value = 2;
+    const ng = ctx.createGain(); ng.gain.value = vol * .25;
+    n.buffer = nb; n.connect(bp); bp.connect(ng); ng.connect(dry); n.start(t);
+  }
+  function play(song, stepCb){
+    init(); stop();
+    cur = { song, i: 0, t0: ctx.currentTime + .15 }; onStep = stepCb;
+    timer = setInterval(sched, 40); sched();
+  }
+  function sched(){
+    if (!cur) return;
+    const { song } = cur, ev = song.events, loopT = song.steps * song.step;
+    while (true){
+      const e = ev[cur.i % ev.length], lap = Math.floor(cur.i / ev.length);
+      const t = cur.t0 + lap * (loopT + song.step) + e.s * song.step + (Math.random() - .5) * .012;
+      if (t > ctx.currentTime + .25) break;
+      tine(e.m, t, e.v * (.9 + Math.random() * .2));
+      cur.i++;
+    }
+    if (onStep){ const el = (ctx.currentTime - cur.t0) % (loopT + song.step); onStep(Math.max(0, el / loopT)); }
+  }
+  function stop(){ clearInterval(timer); timer = null; cur = null; if (ctx && out){ out.gain.cancelScheduledValues(ctx.currentTime); out.gain.setValueAtTime(.9, ctx.currentTime); } }
+  function fadeStop(){ if (!ctx) return stop(); out.gain.setTargetAtTime(.0001, ctx.currentTime, .25); const c = cur; setTimeout(() => { if (cur === c) stop(); }, 900); cur = null; clearInterval(timer); }
+  return { play, stop: fadeStop };
+})();
+
+/* ============ Las melodías (composición original) ============
+   Cada compás: [acorde, [[nota, duración en pasos], ...]]  (nota 0 = silencio)
+   El acompañamiento arpegia el acorde en cada paso. */
+const CH = {
+  Bm:[59,"m"], G:[55,"M"], D:[50,"M"], A:[57,"M"], Em:[52,"m"], Fs:[54,"M"], Fsm:[54,"m"],
+  Am:[57,"m"], F:[53,"M"], C:[48,"M"], E:[52,"M"], Dm:[50,"m"], Bb:[58,"M"], Gm:[55,"m"]
+};
+const ARP = { 6:[0,1,2,3,2,1], 8:[0,1,2,3,2,1,2,1] };
+function build(def){
+  const ev = []; let s = 0;
+  def.bars.forEach(([chords, mel], bi) => {
+    const list = chords.split(" ");                     // uno o dos acordes por compás
+    for (let k = 0; k < def.meter; k++){
+      const [root, q] = CH[list[Math.floor(k * list.length / def.meter)]];
+      const iv = [0, 7, 12, q === "M" ? 16 : 15][ARP[def.meter][k]];
+      ev.push({ s: s + k, m: root + iv, v: (k === 0 ? .2 : .13) * def.acc });
+    }
+    let p = 0, sum = 0;
+    mel.forEach(([m, d]) => { if (m) ev.push({ s: s + p, m, v: .34 }); p += d; sum += d; });
+    if (sum !== def.meter) console.warn("compás", bi + 1, "suma", sum);
+    s += def.meter;
+  });
+  ev.sort((a, b) => a.s - b.s);
+  return { events: ev, steps: s, step: def.step };
+}
+/* Motor ampliado para las piezas románticas:
+   acordes con bajo propio y notas de color, patrón de acompañamiento por canción,
+   y por compás: dyn (volumen), oct (melodía doblada una octava arriba), rit (el compás se alarga) */
+function build2(def){
+  const ev = []; let s = 0;
+  def.bars.forEach(([chords, mel, o = {}]) => {
+    const dyn = o.dyn || 1, f = o.rit || 1, list = chords.split(" ");
+    for (let k = 0; k < def.meter; k++){
+      const [bass, tones] = def.chords[list[Math.floor(k * list.length / def.meter)]];
+      ev.push({ s: s + k * f, m: bass + tones[def.arp[k]], v: (k === 0 ? .2 : .13) * def.acc * dyn });
+    }
+    let p = 0, sum = 0;
+    mel.forEach(([m, d]) => {
+      if (m){ ev.push({ s: s + p * f, m, v: .34 * dyn }); if (o.oct && m + 12 <= 96) ev.push({ s: s + p * f, m: m + 12, v: .15 * dyn }); }
+      p += d; sum += d;
+    });
+    if (Math.abs(sum - def.meter) > .001) console.warn("compás suma", sum);
+    s += def.meter * f;
+  });
+  ev.sort((a, b) => a.s - b.s);
+  return { events: ev, steps: s, step: def.step };
+}
+
+const SONGS = {
+  // Hilo rojo: original inspirada en Einaudi. Acompañamiento que se repite como un latido,
+  // círculo la menor – fa – do – sol, melodía de pocas notas largas; crece y vuelve a la calma.
+  hilo: build2({ meter:8, step:.32, acc:1.1, arp:[0,2,3,4,3,2,1,2],
+    chords:{ Am:[45,[0,7,12,14,15,19]], F:[41,[0,7,12,16,19,23]], C:[48,[0,7,12,14,16,19]], G:[43,[0,7,12,14,16,19]] },
+    bars:[
+      ["Am",[[0,8]],{dyn:.8}], ["F",[[0,8]],{dyn:.85}],
+      ["C",[[76,4],[74,2],[72,2]]], ["G",[[72,6],[69,2]]], ["Am",[[67,2],[72,2],[76,4]]], ["F",[[74,6],[71,2]]],
+      ["Am",[[76,4],[74,2],[72,2]]], ["F",[[81,4],[79,2],[77,2]]], ["C",[[76,4],[74,2],[72,2]]], ["G",[[74,8]]],
+      ["Am",[[76,2],[81,2],[83,2],[84,2]],{dyn:1.15,oct:1}], ["F",[[84,4],[83,2],[81,2]],{dyn:1.2,oct:1}],
+      ["C",[[79,2],[84,2],[88,4]],{dyn:1.25,oct:1}], ["G",[[86,6],[83,2]],{dyn:1.2,oct:1}],
+      ["Am",[[84,3],[83,1],[81,2],[76,2]],{dyn:1.05}], ["F",[[81,4],[79,2],[77,2]]], ["C",[[76,4],[79,2],[72,2]],{dyn:.9}], ["G",[[74,8]],{dyn:.85}],
+      ["Am",[[76,8]],{dyn:.7,rit:1.12}], ["C",[[72,8]],{dyn:.6,rit:1.3}] ]}),
+  // Contigo en un sueño: original inspirada en Yiruma. Bajo que desciende nota por nota,
+  // arpegios que suben y bajan, adornos rápidos y el tema repetido una octava arriba.
+  sueno: build2({ meter:8, step:.3, acc:1, arp:[0,1,2,3,4,3,2,1],
+    chords:{ "Bb":[58,[0,7,12,16,19,24]], "F/A":[57,[0,8,12,15,20,24]], "Gm":[55,[0,7,12,15,19,24]], "Dm/F":[53,[0,9,12,16,21,24]],
+             "Eb":[51,[0,7,12,16,19,24]], "Bb/D":[50,[0,8,12,15,20,24]], "Cm":[48,[0,7,12,15,19,24]], "F":[53,[0,7,12,16,19,22]] },
+    bars:[
+      // Introducción: solo el acompañamiento
+      ["Bb",[[0,8]],{dyn:.75}], ["F/A",[[0,8]],{dyn:.8}],
+      // Tema
+      ["Bb",[[74,2],[77,2],[82,3],[81,1]]], ["F/A",[[81,4],[79,1],[77,1],[72,2]]], ["Gm",[[74,2],[79,2],[82,3],[81,.5],[79,.5]]], ["Dm/F",[[77,6],[74,1],[77,1]]],
+      ["Eb",[[79,3],[77,1],[75,2],[79,2]]], ["Bb/D",[[77,3],[74,1],[70,2],[74,2]]], ["Cm",[[75,2],[74,1],[72,1],[79,2],[77,1],[75,1]]], ["F",[[72,6],[0,2]]],
+      // Tema una octava arriba, más emocionado
+      ["Bb",[[74,1],[77,1],[82,2],[86,3],[84,1]],{dyn:1.15,oct:1}], ["F/A",[[84,4],[82,1],[81,1],[77,2]],{dyn:1.2,oct:1}],
+      ["Gm",[[79,2],[82,2],[86,3],[84,.5],[82,.5]],{dyn:1.2,oct:1}], ["Dm/F",[[81,6],[77,1],[81,1]],{dyn:1.1}],
+      ["Eb",[[82,3],[81,1],[79,2],[82,2]],{dyn:1.05}], ["Bb/D",[[81,1],[82,1],[77,2],[74,2],[77,2]]], ["Cm",[[79,2],[77,1],[75,1],[74,2],[72,2]],{dyn:.95}],
+      ["F",[[69,2],[72,2],[75,2],[72,2]],{dyn:.95}],
+      // Puente: melodía nueva, de anhelo, que crece hasta el momento más intenso
+      ["Gm",[[74,1],[79,1],[82,3],[81,1],[79,2]]], ["Eb",[[79,3],[77,1],[75,2],[70,2]]], ["Bb",[[74,2],[77,2],[82,2],[86,2]]], ["F",[[84,6],[81,1],[84,1]]],
+      ["Gm",[[86,3],[84,1],[82,2],[79,2]],{dyn:1.1}], ["Eb",[[79,1],[82,1],[87,4],[86,1],[84,1]],{dyn:1.2,oct:1}], ["Cm",[[84,3],[82,1],[81,2],[79,2]],{dyn:1.1}],
+      ["F",[[81,4],[77,2],[72,1],[75,1]],{dyn:.95}],
+      // Regreso del tema, más suave, como un recuerdo
+      ["Bb",[[74,2],[77,2],[82,3],[84,1]],{dyn:.9}], ["F/A",[[81,4],[79,1],[77,1],[72,2]],{dyn:.9}], ["Gm",[[74,2],[79,2],[82,3],[81,.5],[79,.5]],{dyn:.9}], ["Dm/F",[[77,6],[74,1],[77,1]],{dyn:.88}],
+      ["Eb",[[79,3],[77,1],[75,2],[79,2]],{dyn:.88}], ["Bb/D",[[77,3],[74,1],[70,2],[74,2]],{dyn:.85}], ["Cm",[[75,2],[74,1],[72,1],[79,2],[77,1],[75,1]],{dyn:.85}],
+      ["F",[[69,2],[72,2],[75,2],[72,2]],{dyn:.82}],
+      // Final: tranquilo y cada vez más lento
+      ["Eb",[[79,4],[77,2],[75,2]],{dyn:.8,rit:1.05}], ["Bb/D",[[74,4],[77,4]],{dyn:.75,rit:1.1}], ["Cm F",[[75,2],[72,2],[77,2],[81,2]],{dyn:.7,rit:1.2}],
+      ["Bb",[[82,8]],{dyn:.6,rit:1.45}] ]}),
+  // Lluvia de estrellas: pieza original inspirada en el estilo de Yiruma (re mayor, I–V–vi–IV, acompañamiento que fluye)
+  lluvia: build({ meter:8, step:.27, acc:1, bars:[
+    ["D",[[81,3],[78,1],[76,2],[78,2]]], ["A",[[76,6],[73,1],[76,1]]], ["Bm",[[74,3],[78,1],[83,2],[81,2]]], ["G",[[79,4],[78,2],[76,2]]],
+    ["D",[[81,3],[78,1],[76,2],[78,2]]], ["A",[[76,3],[81,1],[85,4]]], ["Bm",[[83,3],[81,1],[78,2],[74,2]]], ["G A",[[76,4],[73,2],[76,2]]],
+    ["G",[[86,3],[83,1],[79,4]]], ["D",[[81,3],[78,1],[74,4]]], ["Em A",[[79,2],[78,2],[76,2],[73,2]]], ["D",[[74,8]]] ]}),
+  // Canción de cuna de Brahms (1868), arreglo de cajita musical en do mayor
+  brahms: build({ meter:6, step:.4, acc:.85, bars:[
+    ["C",[[76,1],[76,1],[79,4]]], ["C",[[76,1],[76,1],[79,4]]], ["C",[[76,1],[79,1],[84,3],[83,1]]], ["F C",[[81,2],[81,1],[79,3]]],
+    ["G",[[74,1],[76,1],[77,2],[74,2]]], ["G",[[74,1],[76,1],[77,4]]], ["G",[[74,1],[77,1],[83,3],[81,1]]], ["G C",[[79,2],[83,2],[84,2]]],
+    ["C",[[72,1],[72,1],[84,4]]], ["F C",[[81,1],[77,1],[79,4]]], ["C F",[[76,1],[72,1],[77,2],[79,1],[81,1]]], ["C",[[79,6]]],
+    ["C",[[72,1],[72,1],[84,4]]], ["F C",[[81,1],[77,1],[79,4]]], ["C G",[[76,1],[72,1],[77,2],[76,1],[74,1]]], ["C",[[72,6]]] ]}),
+  // Estrellita, ¿dónde estás? (tradicional), arreglo de cajita musical
+  estrellita: build({ meter:8, step:.32, acc:.8, bars:[
+    ["C",[[72,2],[72,2],[79,2],[79,2]]], ["F C",[[81,2],[81,2],[79,4]]], ["F C",[[77,2],[77,2],[76,2],[76,2]]], ["G C",[[74,2],[74,2],[72,4]]],
+    ["C F",[[79,2],[79,2],[77,2],[77,2]]], ["C G",[[76,2],[76,2],[74,4]]], ["C F",[[79,2],[79,2],[77,2],[77,2]]], ["C G",[[76,2],[76,2],[74,4]]],
+    ["C",[[72,2],[72,2],[79,2],[79,2]]], ["F C",[[81,2],[81,2],[79,4]]], ["F C",[[77,2],[77,2],[76,2],[76,2]]], ["G C",[[74,2],[74,2],[72,4]]] ]}),
+  // Abrazo de luna: canción de cuna original, amorosa, en fa mayor
+  abrazo: build({ meter:6, step:.4, acc:.85, bars:[
+    ["F",[[72,2],[69,1],[72,1],[77,2]]], ["C",[[76,3],[74,1],[72,2]]], ["Bb",[[74,2],[70,1],[74,1],[79,2]]], ["F",[[77,4],[72,2]]],
+    ["Dm",[[74,2],[77,1],[81,1],[79,2]]], ["Bb",[[77,2],[74,2],[70,2]]], ["C",[[72,2],[76,1],[79,1],[77,1],[76,1]]], ["F",[[77,6]]],
+    ["Bb",[[74,2],[77,1],[82,3]]], ["F",[[81,2],[77,1],[72,3]]], ["Gm",[[70,2],[74,1],[79,1],[77,1],[76,1]]], ["C",[[76,3],[79,1],[72,2]]],
+    ["F",[[69,2],[72,1],[77,3]]], ["Bb",[[74,2],[79,1],[77,1],[74,2]]], ["C",[[72,2],[76,1],[79,1],[76,2]]], ["F",[[77,6]]] ]}),
+  // Nube de algodón: vals en si menor
+  nube: build({ meter:6, step:.34, acc:1, bars:[
+    ["Bm",[[78,2],[76,1],[74,1],[73,1],[74,1]]],
+    ["G", [[71,4],[74,2]]],
+    ["D", [[69,2],[74,1],[76,1],[78,2]]],
+    ["A", [[76,5],[0,1]]],
+    ["Bm",[[78,2],[76,1],[74,1],[73,1],[74,1]]],
+    ["G", [[71,2],[79,2],[78,1],[76,1]]],
+    ["Em",[[76,2],[74,1],[73,1],[71,2]]],
+    ["Fs",[[70,4],[73,2]]],
+    ["G", [[74,2],[76,1],[78,1],[79,2]]],
+    ["A", [[81,2],[79,1],[78,1],[76,2]]],
+    ["Fsm",[[78,2],[73,2],[69,2]]],
+    ["Bm",[[71,4],[74,1],[78,1]]],
+    ["Em",[[83,3],[81,1],[79,1],[78,1]]],
+    ["A", [[76,2],[78,1],[76,1],[73,2]]],
+    ["D Fs",[[74,2],[73,1],[71,1],[70,2]]],
+    ["Bm",[[71,6]]]
+  ]}),
+  // Luna de papel: arrullo en la menor, 6/8
+  luna: build({ meter:6, step:.38, acc:.95, bars:[
+    ["Am",[[76,3],[81,2],[79,1]]],
+    ["F", [[77,3],[76,2],[74,1]]],
+    ["C", [[76,2],[72,1],[67,3]]],
+    ["E", [[68,3],[71,3]]],
+    ["Am",[[69,2],[72,1],[76,3]]],
+    ["Dm",[[77,2],[76,1],[74,2],[72,1]]],
+    ["E", [[71,2],[72,1],[74,1],[71,2]]],
+    ["Am",[[69,6]]],
+    ["Dm",[[74,2],[77,1],[81,3]]],
+    ["G", [[79,2],[77,1],[74,3]]],
+    ["C", [[76,2],[79,1],[72,3]]],
+    ["F", [[69,3],[72,2],[77,1]]],
+    ["Dm",[[77,3],[76,2],[74,1]]],
+    ["E", [[76,2],[74,1],[71,2],[68,1]]],
+    ["Am",[[69,2],[71,1],[72,2],[76,1]]],
+    ["Am",[[69,6]]]
+  ]}),
+  // Carta para ti: balada en fa mayor, 4/4
+  carta: build({ meter:8, step:.29, acc:.85, bars:[
+      ["F",[[72,1],[77,1],[81,2],[79,1],[77,1],[81,2]]], ["C",[[79,2],[76,1],[72,1],[76,2],[79,2]]], ["Bb",[[77,1],[74,1],[70,1],[74,1],[77,2],[81,1],[82,1]]], ["F",[[81,3],[79,1],[77,4]]],
+      ["Bb",[[74,1],[77,1],[82,2],[81,1],[79,1],[77,2]]], ["C",[[76,1],[79,1],[84,2],[82,1],[81,1],[79,2]]], ["F",[[81,2],[77,1],[79,1],[81,2],[84,2]]], ["C",[[79,3],[81,1],[79,2],[76,2]]],
+      ["Bb",[[77,1],[79,1],[81,1],[82,1],[86,2],[82,2]]], ["C",[[84,2],[82,1],[81,1],[79,2],[76,2]]], ["Bb C",[[77,2],[74,2],[76,1],[79,1],[84,2]]], ["F",[[84,1],[81,1],[77,6]]] ]}),
+  // Melodía del perrito: la melodía de siempre con el arreglo de cajita musical
+  actual: (() => {
+    const mel = [76,0,79,0, 81,79,76,0, 74,0,76,0, 72,0,0,0, 76,0,79,0, 84,83,81,0, 79,0,76,0, 74,0,0,0,
+                 72,0,74,76, 77,0,76,74, 72,0,76,0, 79,0,0,0, 81,79,77,76, 74,0,72,0, 74,76,74,0, 72,0,0,0];
+    const fromSteps = arr => { const out = []; arr.forEach(m => { if (m || !out.length) out.push([m, 1]); else out[out.length - 1][1]++; }); return out; };
+    return build({ meter:8, step:.3, acc:.85, bars:
+      ["C F","G C","C F","G G","F C","F G","F C","G C"].map((c, i) => [c, fromSteps(mel.slice(i * 8, i * 8 + 8))]) });
+  })()
+};
+
+/* ============ Página ============ */
+let playing = null;
+document.querySelectorAll(".box").forEach(box => {
+  box.querySelector(".play").addEventListener("click", () => {
+    const was = playing === box;
+    document.querySelectorAll(".box").forEach(b => b.classList.remove("playing"));
+    if (playing) Box.stop();
+    playing = null;
+    if (was) return;
+    setTimeout(() => {
+      playing = box; box.classList.add("playing");
+      const bar = box.querySelector(".prog");
+      Box.play(SONGS[box.dataset.song], p => { if (bar) bar.style.width = Math.min(100, p * 100) + "%"; });
+    }, 120);
+  });
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden && playing){ playing.querySelector(".play").click(); } });
+</script>
+
+</body>
+</html>

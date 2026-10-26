@@ -1,0 +1,32 @@
+Cajitas de Buena Vibra para Yei Yei
+====================================
+
+Cómo abrir el juego
+- Abre "index.html" con tu navegador (Chrome, Safari, Edge...).
+  Importante: deja "index.html" junto a la carpeta "img"; el juego necesita esas imágenes.
+- Las letras se cargan de internet (Google Fonts). Sin internet el juego funciona,
+  pero con una letra más sencilla.
+- Versión en línea: https://claude.ai/artifact/7PydpGTHLbnUnDy4xUE9gs
+
+Qué hay aquí
+- index.html .............. el juego completo (código, textos, sonidos, música y animaciones)
+- cajitas_musicales.html .. página para escuchar todas las melodías compuestas
+- img/ .................... ilustraciones limpias y optimizadas
+- img/rig/ ................ piezas para animar (orejas y cola de los perritos, carta en blanco)
+
+Cambiar textos
+Abre index.html con un editor de texto (Bloc de notas, VS Code...) y busca "CONFIG"
+al inicio del código. Ahí están:
+- nombre ........ "Yei Yei"
+- de ............ quién firma la carta
+- carta ......... los párrafos de la carta especial
+- recordatorio .. la frase del agua
+- minCajitas / maxCajitas .. entre cuántas cajitas aparece el perrito
+Justo debajo (BOXES) están los 3 mensajes de cada cajita.
+
+Cambiar la música
+Busca "SONG_OF" en index.html. Ahí dice qué canción suena en cada pantalla:
+- "perrito" ... Melodía del perrito (inicio, ruleta y resultado)
+- "sueno" ..... Contigo en un sueño, estilo Yiruma (sorpresa y carta)
+También están disponibles "nube" (Nube de algodón) y "carta" (Carta para ti).
+Para escucharlas todas, abre cajitas_musicales.html.
